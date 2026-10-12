@@ -1,0 +1,893 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiterskRP — Официальный портал правил</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #05070d;
+      --bg-surface: rgba(13, 17, 28, 0.7);
+      --bg-card: rgba(18, 24, 40, 0.55);
+      --bg-card-hover: rgba(26, 34, 56, 0.75);
+      
+      --accent: #00f0ff;
+      --accent-rgb: 0, 240, 255;
+      --accent-glow: rgba(0, 240, 255, 0.25);
+      --accent-purple: #8a2be2;
+      --accent-pink: #ff0077;
+      
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 240, 255, 0.3);
+      --border-glow: 0 0 20px rgba(0, 240, 255, 0.15);
+      
+      --badge-warn: #fbbf24;
+      --badge-ban: #f43f5e;
+      --badge-jail: #38bdf8;
+      --badge-mute: #a855f7;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    /* Фоновые градиентные сферы */
+    .bg-glow-1 {
+      position: fixed;
+      top: -10%;
+      left: 15%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
+      filter: blur(80px);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .bg-glow-2 {
+      position: fixed;
+      bottom: -10%;
+      right: 10%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, rgba(138, 43, 226, 0.09) 0%, transparent 70%);
+      filter: blur(90px);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Навигация */
+    header {
+      position: sticky;
+      top: 16px;
+      margin: 0 1.5rem;
+      z-index: 50;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0.85rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .logo-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #00f0ff 0%, #8a2be2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.3rem;
+      color: #000;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+      position: relative;
+    }
+
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #00f0ff, transparent, #8a2be2);
+      z-index: -1;
+      opacity: 0.6;
+    }
+
+    .logo-text h1 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      background: linear-gradient(180deg, #ffffff 20%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .server-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 0.65rem 1.35rem;
+      border-radius: 10px;
+      font-family: var(--font-main);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00f0ff 0%, #0099ff 100%);
+      color: #030816;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 240, 255, 0.5);
+      color: #000;
+    }
+
+    /* Главный контейнер */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 6rem;
+    }
+
+    .hero-banner {
+      text-align: center;
+      margin-bottom: 3.5rem;
+      position: relative;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.4rem 1rem;
+      background: rgba(0, 240, 255, 0.06);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      margin-bottom: 1.5rem;
+      box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.1);
+    }
+
+    .hero-banner h2 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      letter-spacing: -1.5px;
+      background: linear-gradient(180deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-banner p {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 620px;
+      margin: 0 auto 2.5rem;
+      font-weight: 400;
+    }
+
+    /* Поисковая панель */
+    .search-wrapper {
+      max-width: 650px;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.25rem;
+      width: 18px;
+      height: 18px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 1.15rem 1.25rem 1.15rem 3.25rem;
+      background: rgba(15, 20, 35, 0.75);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s;
+      font-family: var(--font-main);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow), inset 0 0 10px rgba(0, 240, 255, 0.05);
+      background: rgba(18, 25, 45, 0.9);
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* Быстрые фильтры / Теги */
+    .filter-tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 3.5rem;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      padding: 0.45rem 1rem;
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Секции правил */
+    .rules-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .rule-category {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .rule-category:hover {
+      border-color: var(--border-accent);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .category-header {
+      padding: 1.35rem 1.75rem;
+      background: rgba(255, 255, 255, 0.015);
+      border-bottom: 1px solid transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .category-header:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .category-header.active {
+      border-bottom-color: var(--border);
+    }
+
+    .category-header h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .category-number {
+      font-family: var(--font-mono);
+      color: var(--accent);
+      font-size: 0.95rem;
+      padding: 3px 8px;
+      background: rgba(0, 240, 255, 0.08);
+      border-radius: 6px;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .chevron-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--text-dim);
+      transition: transform 0.3s ease;
+    }
+
+    .category-header.active .chevron-icon {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+
+    .category-body {
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .rule-item {
+      padding: 1.25rem 1.4rem;
+      background: rgba(10, 14, 25, 0.65);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-left: 4px solid var(--accent);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .rule-item:hover {
+      transform: translateX(4px);
+      border-color: rgba(255, 255, 255, 0.09);
+      background: rgba(14, 20, 36, 0.85);
+    }
+
+    .rule-item.danger {
+      border-left-color: var(--badge-ban);
+    }
+
+    .rule-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+      gap: 12px;
+    }
+
+    .rule-code {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .rule-item.danger .rule-code {
+      color: #ffe4e8;
+    }
+
+    .rule-text {
+      color: #94a3b8;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .rule-text strong {
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+
+    .rule-punish {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(244, 63, 94, 0.08);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: #fda4af;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .rule-punish.jail {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.2);
+      color: #7dd3fc;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        margin: 0;
+        border-radius: 0;
+        top: 0;
+        padding: 0.75rem 1rem;
+      }
+      .hero-banner h2 {
+        font-size: 2.3rem;
+      }
+      .hero-banner p {
+        font-size: 1rem;
+      }
+      .container {
+        padding: 2.5rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Градиентные световые пятна на фоне -->
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+  <canvas id="bg-canvas"></canvas>
+
+  <header>
+    <div class="logo-block" onclick="playSound('click')">
+      <div class="logo-badge">P</div>
+      <div class="logo-text">
+        <h1>PiterskRP</h1>
+        <div class="server-status">
+          <span class="status-dot"></span>
+          <span>Online • Редакция 2026</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <a href="https://discord.gg/" target="_blank" class="btn btn-primary" onclick="playSound('click')">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-banner">
+      <div class="hero-tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        ПРАВИЛА И РЕГЛАМЕНТ СЕРВЕРА
+      </div>
+      <h2>Единый кодекс PiterskRP</h2>
+      <p>Официальные нормы поведения, внутриигровая субординация и правила взаимодействия для комфортной игры.</p>
+      
+      <div class="search-wrapper">
+        <div class="search-box">
+          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="ruleSearch" placeholder="Поиск по термину, коду или ключевому слову (DM, PG, розыск)..." oninput="filterRules()">
+        </div>
+      </div>
+
+      <div class="filter-tags">
+        <button class="filter-btn active" onclick="quickFilter('')">Все правила</button>
+        <button class="filter-btn" onclick="quickFilter('Термины')">Термины RP</button>
+        <button class="filter-btn" onclick="quickFilter('Зелёные')">Зеленые зоны</button>
+        <button class="filter-btn" onclick="quickFilter('Криминал')">Криминал</button>
+        <button class="filter-btn" onclick="quickFilter('Гос')">Гос. структуры</button>
+      </div>
+    </section>
+
+    <div class="rules-grid" id="rulesContainer">
+      <!-- 0. Глоссарий терминов -->
+      <div class="rule-category" data-category="Термины">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">00</span> Основные RP-термины и понятия</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">IC (In Character) / OOC (Out of Character)</div>
+            </div>
+            <div class="rule-text"><strong>IC</strong> — игровая реальность и всё, что касается персонажа. <strong>OOC</strong> — реальный мир, /b чат, стримы и сторонние каналы. Смешивание понятий строго воспрещено.</div>
+          </div>
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">DM (DeathMatch)</div>
+            </div>
+            <div class="rule-text">Убийство или нанесение урона другому персонажу без весомой ролевой (IC) причины и диалога.</div>
+            <div class="rule-punish">Demorgan 60-120 мин / Ban до 3 дней</div>
+          </div>
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">DB (DriveBy)</div>
+            </div>
+            <div class="rule-text">Убийство или намеренное нанесение урона персонажам с использованием транспортного средства.</div>
+            <div class="rule-punish jail">Demorgan 40-80 мин</div>
+          </div>
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">PG (PowerGaming)</div>
+            </div>
+            <div class="rule-text">Преувеличение физических возможностей, отсутствие инстинкта самосохранения (например, бой 1 против 3 вооруженных).</div>
+            <div class="rule-punish">Demorgan 60 мин / Warn</div>
+          </div>
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">MG (MetaGaming)</div>
+            </div>
+            <div class="rule-text">Использование информации, полученной вне игры (стримы, чаты Discord), в игровом процессе персонажа.</div>
+            <div class="rule-punish">Mute 60-120 мин / Demorgan 30 мин</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. Общие положения -->
+      <div class="rule-category" data-category="Общие">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">01</span> Общие положения сервера</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">1.1 Никнейм персонажа</div>
+            </div>
+            <div class="rule-text">Никнейм должен быть строго формата «Имя_Фамилия» без цифр, транслита мата или нецензурных выражений.</div>
+            <div class="rule-punish jail">Принудительная смена / Kick</div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">1.2 Мультиаккаунт</div>
+            </div>
+            <div class="rule-text">Разрешено иметь не более 2 аккаунтов. Взаимодействие и передача имущества между своими твинками строго запрещены.</div>
+            <div class="rule-punish">Перманентная блокировка всех твинков</div>
+          </div>
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">1.3 Читы и сторонний софт</div>
+            </div>
+            <div class="rule-text">Любые программы, скрипты или модификации, дающие необоснованное преимущество перед другими игроками.</div>
+            <div class="rule-punish">Перманентный бан по железу (HWID)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Игровой процесс и отыгровки -->
+      <div class="rule-category" data-category="RP">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">02</span> Правила RP-процесса и отыгровок</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">2.1 Отыгровки /me, /do, /todo, /try</div>
+            </div>
+            <div class="rule-text">Запрещена игра в свою пользу через /do. Все серьезные взаимодействия обязаны сопровождаться корректными отыгровками.</div>
+            <div class="rule-punish jail">Demorgan 30-60 мин</div>
+          </div>
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">2.2 Уход от RP</div>
+            </div>
+            <div class="rule-text">Выход из игры, уход в интерьер или AFK во время погонь, допросов, задержаний или перестрелок.</div>
+            <div class="rule-punish">Warn / Ban на 3-7 дней</div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">2.3 FearRP (Страх за жизнь)</div>
+            </div>
+            <div class="rule-text">Игрок обязан ценить жизнь персонажа при направленном оружии или численном превосходстве нападающих.</div>
+            <div class="rule-punish jail">Demorgan 60 мин</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Зеленые зоны -->
+      <div class="rule-category" data-category="Зелёные">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">03</span> Зелёные Зоны (Green Zone)</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">3.1 Запрет криминала в ЗЗ</div>
+            </div>
+            <div class="rule-text">Зоны: больницы, мэрия, полиция, спавны, автошкола, начальные работы. Стрельба, похищения и грабежи здесь запрещены.</div>
+            <div class="rule-punish">Warn / Ban до 3 дней</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Криминал и ограбления -->
+      <div class="rule-category" data-category="Криминал">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">04</span> Правила криминальных структур</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">4.1 Ограбления и похищения</div>
+            </div>
+            <div class="rule-text">Проводятся строго в составе от 2 грабителей на 1 жертву в безлюдных переулках или за пределами городской черты.</div>
+            <div class="rule-punish jail">Demorgan 60-90 мин</div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">4.2 Лимиты выкупа</div>
+            </div>
+            <div class="rule-text">Сумма выкупа за заложников и госслужащих жестко фиксируется регламентом криминальных синдикатов.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Государственные фракции -->
+      <div class="rule-category" data-category="Гос">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">05</span> Государственные структуры (МВД, ФСБ, МЗ)</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">5.1 NonRP Cop</div>
+            </div>
+            <div class="rule-text">Беспричинные аресты, выдача розыска без фиксации, стрельба без предупреждения и стадии силы.</div>
+            <div class="rule-punish">Warn / ЧС гос. структур</div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">5.2 Стадии применения силы</div>
+            </div>
+            <div class="rule-text">Обязательное соблюдение ступеней: Присутствие → Команда → Сила → Спецсредства → Огнестрельное оружие.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Этика и правила общения -->
+      <div class="rule-category" data-category="Чат">
+        <div class="category-header active" onclick="toggleCategory(this)">
+          <h3><span class="category-number">06</span> Культура общения и игровой чат</h3>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="category-body">
+          <div class="rule-item danger">
+            <div class="rule-header-row">
+              <div class="rule-code">6.1 Оскорбление родных</div>
+            </div>
+            <div class="rule-text">Любые упоминания родственников в унизительном контексте караются бескомпромиссно.</div>
+            <div class="rule-punish">Ban 15-30 дней / Перманентный бан</div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-header-row">
+              <div class="rule-code">6.2 Разжигание вражды</div>
+            </div>
+            <div class="rule-text">Провокации на почве религии, национальности, политические лозунги в любых чатах.</div>
+            <div class="rule-punish">Ban 7-30 дней</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Плавный синтез звука
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      }
+    }
+
+    // Раскрытие категорий
+    function toggleCategory(header) {
+      playSound('click');
+      header.classList.toggle('active');
+      const body = header.nextElementSibling;
+      if (header.classList.contains('active')) {
+        body.style.display = 'flex';
+      } else {
+        body.style.display = 'none';
+      }
+    }
+
+    // Быстрые фильтры
+    function quickFilter(categoryText) {
+      playSound('click');
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      const categories = document.querySelectorAll('.rule-category');
+      categories.forEach(cat => {
+        if (!categoryText || cat.getAttribute('data-category').includes(categoryText)) {
+          cat.style.display = 'block';
+        } else {
+          cat.style.display = 'none';
+        }
+      });
+    }
+
+    // Поиск
+    function filterRules() {
+      const q = document.getElementById("ruleSearch").value.toLowerCase();
+      const items = document.querySelectorAll(".rule-item");
+      const categories = document.querySelectorAll(".rule-category");
+
+      items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(q) ? "block" : "none";
+      });
+
+      categories.forEach(cat => {
+        const visibleItems = cat.querySelectorAll('.rule-item[style="display: block;"]');
+        cat.style.display = (q === "" || visibleItems.length > 0) ? "block" : "none";
+      });
+    }
+
+    // Интерактивная паутина частиц (Constellation Canvas)
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    const particles = [];
+    const MAX_PARTICLES = 65;
+    const CONNECTION_DIST = 120;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.vx = (Math.random() - 0.5) * 0.35;
+        this.vy = (Math.random() - 0.5) * 0.35;
+        this.size = Math.random() * 1.5 + 1;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > w) this.vx *= -1;
+        if (this.y < 0 || this.y > h) this.vy *= -1;
+      }
+      draw() {
+        ctx.fillStyle = "rgba(0, 240, 255, 0.5)";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      particles.push(new Particle());
+    }
+
+    function renderCanvas() {
+      ctx.clearRect(0, 0, w, h);
+      
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < CONNECTION_DIST) {
+            const alpha = (1 - dist / CONNECTION_DIST) * 0.15;
+            ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      requestAnimationFrame(renderCanvas);
+    }
+    renderCanvas();
+  </script>
+</body>
+</html>
